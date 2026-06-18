@@ -15,7 +15,7 @@ function getView(): View {
 }
 
 export default function App() {
-  const { token, signIn, isSignedIn } = useGoogleAuth()
+  const { token, signIn, isSignedIn, unauthorized } = useGoogleAuth()
   const [view, setView] = useState<View>(getView)
 
   const [photo, setPhoto] = useState<File | null>(null)
@@ -76,7 +76,19 @@ export default function App() {
       </header>
 
       <main className="flex-1 px-4 py-6 flex flex-col gap-5 max-w-lg mx-auto w-full pb-24">
-        {!isSignedIn ? (
+        {unauthorized ? (
+          <div className="flex flex-col items-center justify-center flex-1 gap-4">
+            <p className="text-red-500 text-sm text-center font-medium">
+              Unauthorized. This app is restricted to a specific account.
+            </p>
+            <button
+              onClick={signIn}
+              className="text-xs text-gray-400 underline"
+            >
+              Try a different account
+            </button>
+          </div>
+        ) : !isSignedIn ? (
           <div className="flex flex-col items-center justify-center flex-1 gap-4">
             <p className="text-gray-500 text-sm text-center">
               Sign in with your Google account to save photos to Drive and notes to Sheets.

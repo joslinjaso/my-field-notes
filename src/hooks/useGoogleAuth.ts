@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { GOOGLE_CLIENT_ID, SCOPES } from '../lib/google'
 
+const ALLOWED_EMAIL = 'jason.joslin1@gmail.com'
+
 export interface GoogleToken {
   access_token: string
   expires_in: number
@@ -9,6 +11,7 @@ export interface GoogleToken {
 
 export function useGoogleAuth() {
   const [token, setToken] = useState<GoogleToken | null>(null)
+  const [unauthorized, setUnauthorized] = useState(false)
   const clientRef = useRef<google.accounts.oauth2.TokenClient | null>(null)
 
   useEffect(() => {
@@ -16,8 +19,17 @@ export function useGoogleAuth() {
       clientRef.current = google.accounts.oauth2.initTokenClient({
         client_id: GOOGLE_CLIENT_ID,
         scope: SCOPES,
-        callback: (resp) => {
+        callback: async (resp) => {
           if (resp.error) return
+          const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { Authorization: `Bearer ${resp.access_token}` },
+          })
+          const { email } = await res.json()
+          if (email !== ALLOWED_EMAIL) {
+            setUnauthorized(true)
+            return
+          }
+          setUnauthorized(false)
           setToken({
             access_token: resp.access_token,
             expires_in: Number(resp.expires_in),
@@ -46,5 +58,5 @@ export function useGoogleAuth() {
     Date.now() - token.obtainedAt < (token.expires_in - 60) * 1000
   )
 
-  return { token, signIn, isSignedIn }
+  return { token, signIn, isSignedIn, unauthorized }
 }
