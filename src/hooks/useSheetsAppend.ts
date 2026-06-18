@@ -6,7 +6,7 @@ export async function appendToSheet(
 ): Promise<void> {
   const url =
     `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}` +
-    `/values/Sheet1!A:D:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`
+    `/values/Sheet1!A1:D:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`
 
   const res = await fetch(url, {
     method: 'POST',
