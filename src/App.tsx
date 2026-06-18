@@ -6,11 +6,6 @@ import { PhotoCapture } from './components/PhotoCapture'
 import { NoteForm } from './components/NoteForm'
 import { StatusBanner } from './components/StatusBanner'
 
-interface Coords {
-  lat: number
-  lng: number
-}
-
 type Status = 'idle' | 'uploading' | 'success' | 'error'
 
 export default function App() {
@@ -18,10 +13,9 @@ export default function App() {
 
   const [photo, setPhoto] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
-  const [note, setNote] = useState('')
-  const [coords, setCoords] = useState<Coords | null>(null)
-  const [locLoading, setLocLoading] = useState(false)
-  const [locError, setLocError] = useState<string | null>(null)
+  const [item, setItem] = useState('')
+  const [area, setArea] = useState('')
+  const [description, setDescription] = useState('')
   const [status, setStatus] = useState<Status>('idle')
   const [driveUrl, setDriveUrl] = useState<string | null>(null)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
@@ -33,26 +27,6 @@ export default function App() {
     setDriveUrl(null)
   }
 
-  const handleGetLocation = () => {
-    if (!navigator.geolocation) {
-      setLocError('Geolocation not supported by this browser')
-      return
-    }
-    setLocLoading(true)
-    setLocError(null)
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude })
-        setLocLoading(false)
-      },
-      (err) => {
-        setLocError(err.message)
-        setLocLoading(false)
-      },
-      { enableHighAccuracy: true, timeout: 10000 },
-    )
-  }
-
   const handleSubmit = async () => {
     if (!photo || !token) return
     setStatus('uploading')
@@ -62,16 +36,14 @@ export default function App() {
       const url = await uploadToDrive(photo, token.access_token)
       setDriveUrl(url)
 
-      const timestamp = new Date().toISOString()
-      const lat = coords ? String(coords.lat) : ''
-      const lng = coords ? String(coords.lng) : ''
-      await appendToSheet(token.access_token, [timestamp, note, lat, lng, url])
+      await appendToSheet(token.access_token, [item, area, description, url])
 
       setStatus('success')
       setPhoto(null)
       setPreview(null)
-      setNote('')
-      setCoords(null)
+      setItem('')
+      setArea('')
+      setDescription('')
     } catch (err) {
       setStatus('error')
       setErrorMsg(err instanceof Error ? err.message : String(err))
@@ -104,12 +76,12 @@ export default function App() {
             <PhotoCapture photo={photo} preview={preview} onCapture={handleCapture} />
 
             <NoteForm
-              note={note}
-              coords={coords}
-              locError={locError}
-              locLoading={locLoading}
-              onNoteChange={setNote}
-              onGetLocation={handleGetLocation}
+              item={item}
+              area={area}
+              description={description}
+              onItemChange={setItem}
+              onAreaChange={setArea}
+              onDescriptionChange={setDescription}
             />
 
             <StatusBanner status={status} driveUrl={driveUrl} errorMsg={errorMsg} />

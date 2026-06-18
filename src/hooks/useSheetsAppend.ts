@@ -2,11 +2,11 @@ import { SHEET_ID } from '../lib/google'
 
 export async function appendToSheet(
   accessToken: string,
-  row: [string, string, string, string, string],
+  row: [string, string, string, string],
 ): Promise<void> {
   const url =
     `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}` +
-    `/values/Sheet1!A1:E1:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`
+    `/values/Sheet1!A:D:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`
 
   const res = await fetch(url, {
     method: 'POST',
