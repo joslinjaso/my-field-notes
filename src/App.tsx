@@ -1,15 +1,22 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useGoogleAuth } from './hooks/useGoogleAuth'
 import { uploadToDrive } from './hooks/useDriveUpload'
 import { appendToSheet } from './hooks/useSheetsAppend'
 import { PhotoCapture } from './components/PhotoCapture'
 import { NoteForm } from './components/NoteForm'
 import { StatusBanner } from './components/StatusBanner'
+import { ListView } from './pages/ListView'
 
 type Status = 'idle' | 'uploading' | 'success' | 'error'
+type View = 'capture' | 'list'
+
+function getView(): View {
+  return window.location.hash === '#/list' ? 'list' : 'capture'
+}
 
 export default function App() {
   const { token, signIn, isSignedIn } = useGoogleAuth()
+  const [view, setView] = useState<View>(getView)
 
   const [photo, setPhoto] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
@@ -19,6 +26,16 @@ export default function App() {
   const [status, setStatus] = useState<Status>('idle')
   const [driveUrl, setDriveUrl] = useState<string | null>(null)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+
+  useEffect(() => {
+    const onHash = () => setView(getView())
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [])
+
+  const navigate = (v: View) => {
+    window.location.hash = v === 'list' ? '#/list' : '#/'
+  }
 
   const handleCapture = (file: File, previewUrl: string) => {
     setPhoto(file)
@@ -58,7 +75,7 @@ export default function App() {
         <h1 className="text-xl font-bold tracking-tight">Field Notes</h1>
       </header>
 
-      <main className="flex-1 px-4 py-6 flex flex-col gap-5 max-w-lg mx-auto w-full">
+      <main className="flex-1 px-4 py-6 flex flex-col gap-5 max-w-lg mx-auto w-full pb-24">
         {!isSignedIn ? (
           <div className="flex flex-col items-center justify-center flex-1 gap-4">
             <p className="text-gray-500 text-sm text-center">
@@ -71,7 +88,7 @@ export default function App() {
               Sign in with Google
             </button>
           </div>
-        ) : (
+        ) : view === 'capture' ? (
           <>
             <PhotoCapture photo={photo} preview={preview} onCapture={handleCapture} />
 
@@ -101,8 +118,31 @@ export default function App() {
               Refresh Google token
             </button>
           </>
+        ) : (
+          <ListView accessToken={token!.access_token} />
         )}
       </main>
+
+      {isSignedIn && (
+        <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex">
+          <button
+            onClick={() => navigate('capture')}
+            className={`flex-1 py-3 text-sm font-medium transition ${
+              view === 'capture' ? 'text-blue-600 border-t-2 border-blue-600 -mt-px' : 'text-gray-500'
+            }`}
+          >
+            Capture
+          </button>
+          <button
+            onClick={() => navigate('list')}
+            className={`flex-1 py-3 text-sm font-medium transition ${
+              view === 'list' ? 'text-blue-600 border-t-2 border-blue-600 -mt-px' : 'text-gray-500'
+            }`}
+          >
+            Items
+          </button>
+        </nav>
+      )}
     </div>
   )
 }
