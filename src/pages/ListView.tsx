@@ -1,6 +1,19 @@
 import { useEffect, useState } from 'react'
 import { getSheetRows } from '../hooks/useSheetsRead'
 
+function driveThumb(url: string): string {
+  try {
+    const u = new URL(url)
+    // https://drive.google.com/uc?id=FILE_ID
+    const id = u.searchParams.get('id')
+    if (id) return `https://drive.google.com/thumbnail?id=${id}&sz=w800`
+    // https://drive.google.com/file/d/FILE_ID/view
+    const match = u.pathname.match(/\/file\/d\/([^/]+)/)
+    if (match) return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w800`
+  } catch { /* ignore invalid URLs */ }
+  return url
+}
+
 interface Props {
   accessToken: string
 }
@@ -63,7 +76,7 @@ export function ListView({ accessToken }: Props) {
         <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           {row.imageUrl && (
             <img
-              src={row.imageUrl}
+              src={driveThumb(row.imageUrl)}
               alt={row.item}
               className="w-full h-48 object-cover"
             />
