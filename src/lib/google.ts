@@ -5,4 +5,5 @@ export const DRIVE_FOLDER_ID = import.meta.env.VITE_DRIVE_FOLDER_ID as string | 
 export const SCOPES = [
   'https://www.googleapis.com/auth/drive.file',
   'https://www.googleapis.com/auth/spreadsheets',
+  'email',
 ].join(' ')
