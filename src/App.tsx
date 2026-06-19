@@ -72,7 +72,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <header className="bg-blue-600 text-white px-4 py-4 shadow">
-        <h1 className="text-xl font-bold tracking-tight">Field Notes</h1>
+        <h1 className="text-xl font-bold tracking-tight">Building Maintenence Items</h1>
       </header>
 
       <main className="flex-1 px-4 py-6 flex flex-col gap-5 max-w-lg mx-auto w-full pb-24">
